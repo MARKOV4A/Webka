@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная 4 — Список дел и Туризм</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --primary: #3a7bd5;
+            --primary-hover: #2d5faa;
+            --text: #2c3e50;
+            --light-gray: #b0bec5;
+            --border: #e0e0e0;
+            --shadow: 0 10px 25px rgba(0, 20, 30, 0.1);
+            --font-main: 'Montserrat', sans-serif;
+            --font-decor: 'Pacifico', cursive;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: url('https://images.unsplash.com/photo-1507525425510-4f7b2f3f9b9f?w=1920');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: -1;
+        }
+
+        .todo {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 32px;
+            box-shadow: var(--shadow);
+            width: 90%;
+        }
+
+        .todo__header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .todo__header img {
+            width: 48px;
+            height: 48px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .todo__header h1 {
+            font-family: var(--font-decor);
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
+        .todo__stats {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--light-gray);
+        }
+
+        .todo__input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .todo__input-group input {
+            flex: 1 1 200px;
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 40px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .todo__input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .todo__btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .todo__btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.02);
+        }
+
+        .todo__btn--clear {
+            background: #e74c3c;
+        }
+
+        .todo__btn--clear:hover {
+            background: #c0392b;
+        }
+
+        .todo__filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .todo__filter {
+            background: #ecf0f1;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .todo__filter:hover {
+            background: #d5dbdb;
+        }
+
+        .todo__filter.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .todo__list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .todo__list {
+            list-style: none;
+        }
+
+        .todo__item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s, transform 0.2s;
+            background: white;
+        }
+
+        .todo__item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .todo__item.completed .todo__item-title {
+            text-decoration: line-through;
+            color: var(--light-gray);
+        }
+
+        .todo__item-content {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .todo__checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .todo__item-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .todo__item-date {
+            font-size: 0.75rem;
+            color: var(--light-gray);
+            margin-left: 2rem;
+        }
+
+        .todo__item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .todo__icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: filter 0.2s;
+            filter: brightness(0.6);
+        }
+
+        .todo__icon:hover {
+            filter: brightness(1) drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .todo__empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--light-gray);
+            font-size: 1.2rem;
+        }
+
+        .tourism {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: rgba(255,255,255,0.9);
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+        }
+
+        .tourism__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .tourism__card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .tourism__card:hover {
+            transform: translateY(-8px);
+        }
+
+        .tourism__card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .tourism__card-content {
+            padding: 1.5rem;
+        }
+
+        .tourism__card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .footer {
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .todo__input-group {
+                flex-direction: column;
+            }
+
+            .todo__filters {
+                justify-content: center;
+            }
+
+            .todo__header {
+                justify-content: center;
+            }
+
+            body {
+                background-image: url('https://images.unsplash.com/photo-1507525425510-4f7b2f3f9b9f?w=800');
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="todo">
+        <div class="todo__header">
+            <img src="https://cdn-icons-png.flaticon.com/512/2762/2762740.png" alt="checklist icon">
+            <h1>Мои дела</h1>
+        </div>
+
+        <div class="todo__stats">
+            <span id="task-counter">0</span> задач осталось
+        </div>
+
+        <div class="todo__input-group">
+            <input type="text" id="new-task-input" placeholder="Добавить задачу...">
+            <button class="todo__btn" id="add-task-btn">Добавить</button>
+            <button class="todo__btn todo__btn--clear" id="clear-all-btn">Очистить всё</button>
+        </div>
+
+        <div class="todo__filters">
+            <button class="todo__filter active" data-filter="all">Все</button>
+            <button class="todo__filter" data-filter="active">Активные</button>
+            <button class="todo__filter" data-filter="completed">Выполненные</button>
+        </div>
+
+        <div class="todo__list-container">
+            <ul class="todo__list" id="todo-list"></ul>
+            <div class="todo__empty" id="empty-message" style="display: none;">Не найдено ни одного дела</div>
+        </div>
+    </main>
+
+    <section class="tourism">
+        <h2 style="font-family: var(--font-decor); color: var(--primary); text-align: center; margin-bottom: 2rem;">🌍 Туристические предложения</h2>
+        <div class="tourism__grid">
+            <div class="tourism__card">
+                <img src="https://images.unsplash.com/photo-1506929562872-bb421503ef0a?w=400" alt="Горы">
+                <div class="tourism__card-content">
+                    <h3>Альпийский поход</h3>
+                    <p>Незабываемые виды, чистый воздух и уютные домики.</p>
+                </div>
+            </div>
+            <div class="tourism__card">
+                <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400" alt="Озеро">
+                <div class="tourism__card-content">
+                    <h3>Итальянские озёра</h3>
+                    <p>Романтика, вино и лазурная вода для идеального отдыха.</p>
+                </div>
+            </div>
+            <div class="tourism__card">
+                <img src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=400" alt="Лес">
+                <div class="tourism__card-content">
+                    <h3>Эко-тур в Карелию</h3>
+                    <p>Девственные леса, скалы и прозрачные озёра.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© Кафедра ИТ и МПИ | Лабораторная 4 — CSS | 2025</p>
+    </footer>
+
+    <script>
+        (function() {
+            // ========== МОДЕЛЬ ДАННЫХ ==========
+            let tasks = JSON.parse(localStorage.getItem('todoTasks')) || [
+                { id: Date.now() - 100000, text: 'Купить молоко, хлеб и яйца', completed: false, date: new Date().toLocaleString() },
+                { id: Date.now() - 200000, text: 'Позвонить родителям', completed: true, date: new Date().toLocaleString() },
+                { id: Date.now() - 300000, text: 'Сделать лабораторную по CSS', completed: false, date: new Date().toLocaleString() }
+            ];
+            
+            let currentFilter = 'all';
+
+            // ========== DOM ЭЛЕМЕНТЫ ==========
+            const todoListEl = document.getElementById('todo-list');
+            const emptyMessageEl = document.getElementById('empty-message');
+            const taskCounterEl = document.getElementById('task-counter');
+            const newTaskInput = document.getElementById('new-task-input');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const clearAllBtn = document.getElementById('clear-all-btn');
+            const filterBtns = document.querySelectorAll('.todo__filter');
+
+            // ========== ФУНКЦИИ СОХРАНЕНИЯ ==========
+            function saveTasks() {
+                localStorage.setItem('todoTasks', JSON.stringify(tasks));
+            }
+
+            // ========== ФУНКЦИИ ФИЛЬТРАЦИИ ==========
+            function getFilteredTasks() {
+                if (currentFilter === 'active') return tasks.filter(t => !t.completed);
+                if (currentFilter === 'completed') return tasks.filter(t => t.completed);
+                return tasks;
+            }
+
+            function updateFilterButtons() {
+                filterBtns.forEach(btn => {
+                    const filter = btn.dataset.filter;
+                    if (filter === currentFilter) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // ========== ОТОБРАЖЕНИЕ ЗАДАЧ ==========
+            function renderTasks() {
+                const filtered = getFilteredTasks();
+                
+                // Обновляем счётчик (активные задачи)
+                const activeCount = tasks.filter(t => !t.completed).length;
+                taskCounterEl.textContent = activeCount;
+
+                // Очищаем список
+                todoListEl.innerHTML = '';
+
+                if (filtered.length === 0) {
+                    emptyMessageEl.style.display = 'block';
+                } else {
+                    emptyMessageEl.style.display = 'none';
+                    
+                    filtered.forEach(task => {
+                        const li = document.createElement('li');
+                        li.className = `todo__item ${task.completed ? 'completed' : ''}`;
+                        li.dataset.id = task.id;
+                        
+                        li.innerHTML = `
+                            <div class="todo__item-content">
+                                <input type="checkbox" class="todo__checkbox" ${task.completed ? 'checked' : ''}>
+                                <span class="todo__item-title">${escapeHtml(task.text)}</span>
+                            </div>
+                            <div class="todo__item-date">${escapeHtml(task.date)}</div>
+                            <div class="todo__item-actions">
+                                <img src="https://cdn-icons-png.flaticon.com/512/126/126468.png" alt="edit" class="todo__icon edit-icon">
+                                <img src="https://cdn-icons-png.flaticon.com/512/3096/3096673.png" alt="delete" class="todo__icon delete-icon">
+                            </div>
+                        `;
+                        
+                        // Обработчики внутри элемента
+                        const checkbox = li.querySelector('.todo__checkbox');
+                        checkbox.addEventListener('change', (e) => {
+                            task.completed = e.target.checked;
+                            li.classList.toggle('completed', task.completed);
+                            saveTasks();
+                            renderTasks(); // перерисовываем для обновления счётчика и фильтров
+                        });
+
+                        const editIcon = li.querySelector('.edit-icon');
+                        editIcon.addEventListener('click', () => {
+                            const newText = prompt('Редактировать задачу:', task.text);
+                            if (newText && newText.trim() !== '') {
+                                task.text = newText.trim();
+                                saveTasks();
+                                renderTasks();
+                            }
+                        });
+
+                        const deleteIcon = li.querySelector('.delete-icon');
+                        deleteIcon.addEventListener('click', () => {
+                            tasks = tasks.filter(t => t.id !== task.id);
+                            saveTasks();
+                            renderTasks();
+                        });
+
+                        todoListEl.appendChild(li);
+                    });
+                }
+            }
+
+            // Экранирование HTML
+            function escapeHtml(unsafe) {
+                return unsafe.replace(/[&<>"]/g, function(m) {
+                    if (m === '&') return '&amp;';
+                    if (m === '<') return '&lt;';
+                    if (m === '>') return '&gt;';
+                    if (m === '"') return '&quot;';
+                    return m;
+                });
+            }
+
+            // ========== ОБРАБОТЧИКИ ==========
+            addTaskBtn.addEventListener('click', () => {
+                const text = newTaskInput.value.trim();
+                if (text) {
+                    const newTask = {
+                        id: Date.now(),
+                        text: text,
+                        completed: false,
+                        date: new Date().toLocaleString()
+                    };
+                    tasks.push(newTask);
+                    saveTasks();
+                    newTaskInput.value = '';
+                    renderTasks();
+                }
+            });
+
+            // Добавление по Enter
+            newTaskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTaskBtn.click();
+                }
+            });
+
+            clearAllBtn.addEventListener('click', () => {
+                if (confirm('Удалить все задачи?')) {
+                    tasks = [];
+                    saveTasks();
+                    renderTasks();
+                }
+            });
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    updateFilterButtons();
+                    renderTasks();
+                });
+            });
+
+            // Первоначальный рендер
+            renderTasks();
+            updateFilterButtons();
+        })();
+    </script>
+</body>
+</html>
